@@ -60,6 +60,14 @@ Summary footer in invoice table using Table.Summary
 - Ant Design auto-formatting 0.00 as default even with initial values set
 - Handling dynamic form fields with correct validation
 
+### Optional / Bonus Features
+Backend and Frontend Testing:
+- Added unit tests for API endpoints to ensure reliability and correctness.
+Advanced UI Features:
+- Implemented search and filter functionality for the invoices list with input debouncing for improved performance and user experience.
+Additional Validations:
+- Enforced a total invoice amount limit on the backend to maintain data integrity and business rules.
+
 ### Future Improvements
 - Add authentication
 - Add tags or labels per invoice
