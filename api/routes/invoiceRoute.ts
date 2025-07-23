@@ -5,8 +5,12 @@ import { invoices, lineItems, NewLineItem } from "../db/schema";
 
 const invoiceRoute = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
+const MAX_TOTAL_AMOUNT = 1000;
+
 invoiceRoute.get("/", async c => {
-  const db = c.var.db;
+  //  const db = c.var.db;
+  const db = c.get("db");
+
   const invoiceItems = await db.query.invoices.findMany({
     with: {
       lineItems: true
@@ -16,7 +20,9 @@ invoiceRoute.get("/", async c => {
 });
 
 invoiceRoute.get("/:id", async c => {
-  const db = c.var.db;
+  //  const db = c.var.db;
+  const db = c.get("db");
+
   const invoice = await db.query.invoices.findFirst({
     where: eq(invoices.id, parseInt(c.req.param("id"))),
     with: {
@@ -28,7 +34,9 @@ invoiceRoute.get("/:id", async c => {
 
 invoiceRoute.post("/", async c => {
   try {
-    const db = c.var.db;
+    //const db = c.var.db;
+    const db = c.get("db");
+
     const data = await c.req.json(); // get JSON body from request
 
     if (
@@ -38,10 +46,17 @@ invoiceRoute.post("/", async c => {
       isNaN(new Date(data.date).getTime()) ||
       typeof data.totalAmount !== "number" ||
       data.totalAmount <= 0 ||
+      data.totalAmount > MAX_TOTAL_AMOUNT ||
       !Array.isArray(data.lineItems) ||
       data.lineItems.length === 0
     ) {
-      return c.json({ error: "Invalid or missing required fields" }, 400);
+      if (data.totalAmount > MAX_TOTAL_AMOUNT) {
+        return c.json(
+          { error: `Total amount cannot exceed $${MAX_TOTAL_AMOUNT}` },
+          400
+        );
+      } else
+        return c.json({ error: "Invalid or missing required fields" }, 400);
     }
 
     // validate line items
@@ -92,7 +107,9 @@ invoiceRoute.post("/", async c => {
 
 invoiceRoute.put("/:id", async c => {
   try {
-    const db = c.var.db;
+    //const db = c.var.db;
+    const db = c.get("db");
+
     const invoiceIdParam = c.req.param("id");
 
     // id validation
@@ -175,7 +192,9 @@ invoiceRoute.put("/:id", async c => {
 
 invoiceRoute.delete("/:id", async c => {
   try {
-    const db = c.var.db;
+    //const db = c.var.db;
+    const db = c.get("db");
+
     const invoiceId = c.req.param("id");
 
     // delete line items associated with the invoice

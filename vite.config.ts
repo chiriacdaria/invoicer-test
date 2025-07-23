@@ -1,14 +1,19 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { cloudflare } from '@cloudflare/vite-plugin';
+import { defineConfig } from 'vitest/config';
+import {cloudflare} from '@cloudflare/vite-plugin';
+import { fileURLToPath } from 'url';
 import path from 'path';
 
-// https://vite.dev/config/
+const isTest = process.env.VITEST;
+
 export default defineConfig({
-  plugins: [react(), cloudflare()],
+  plugins: isTest ? [] : [cloudflare()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
+      '@': path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'src')
     }
+  },
+  test: {
+    globals: true,
+    environment: 'node'
   }
-})
+});

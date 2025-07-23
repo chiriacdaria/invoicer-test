@@ -1,19 +1,36 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Table as RSTable, Container, Button } from "reactstrap";
 import { useNavigate } from "react-router-dom";
-import { Space, message, Popconfirm } from "antd";
+import { Space, message, Popconfirm, Input, Row, Col } from "antd";
 import { DeleteOutlined, EyeOutlined, EditOutlined } from "@ant-design/icons";
 import { useInvoiceStore } from "@/store/useInvoiceStore";
 import { Invoice } from "api/db/schema";
 
+const { Search } = Input;
 
 function Invoices() {
   const { invoices, fetchInvoices, deleteInvoice } = useInvoiceStore();
   const navigate = useNavigate();
 
+  const [searchText, setSearchText] = useState("");
+  const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
+
   useEffect(() => {
     fetchInvoices();
   }, [fetchInvoices]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const lower = searchText.toLowerCase();
+      const filtered = invoices.filter((inv) =>
+        inv.customerDetails.toLowerCase().includes(lower) ||
+        inv.id.toString().includes(lower)
+      );
+      setFilteredInvoices(filtered);
+    }, 300); // debounce delay 300ms
+
+    return () => clearTimeout(timeout); // clear if user types again
+  }, [invoices, searchText]);
 
   const handleDelete = async (id: number) => {
     try {
@@ -26,7 +43,21 @@ function Invoices() {
 
   return (
     <Container>
-      <h2 className="my-4">Invoices</h2>
+      <Row justify="space-between" align="middle" className="mb-4">
+        <Col>
+          <h2 className="my-2">Invoices</h2>
+        </Col>
+        <Col>
+          <Search
+            placeholder="Search by customer or ID"
+            allowClear
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            style={{ width: 300 }}
+          />
+        </Col>
+      </Row>
+
       <RSTable striped responsive>
         <thead>
           <tr>
@@ -38,14 +69,14 @@ function Invoices() {
           </tr>
         </thead>
         <tbody>
-          {invoices.length === 0 ? (
+          {filteredInvoices.length === 0 ? (
             <tr>
               <td colSpan={5} className="text-center text-muted">
                 No invoices found.
               </td>
             </tr>
           ) : (
-            invoices.map((invoice : Invoice) => (
+            filteredInvoices.map((invoice) => (
               <tr key={invoice.id}>
                 <td>{invoice.id}</td>
                 <td>{invoice.customerDetails}</td>
