@@ -21,7 +21,7 @@ cd invoicer-test
 npm i (or npm install)
 npm run dev
 ```
-# .dev.vars
+#### .dev.vars
 ```
 cp .dev.vars.example .dev.vars
 ```
